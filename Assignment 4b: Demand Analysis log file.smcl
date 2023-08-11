@@ -1,0 +1,186 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment 4b- Zamima Islam Sabaa/Assignment 4-submissions/Assignment 4b: Demand Analysis.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 8 Mar 2023, 14:34:00
+{txt}
+{com}. cd "/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment 4b- Zamima Islam Sabaa/"
+{res}/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment 4b- Zamima Islam Sabaa
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD98513.000000"
+{txt}
+{com}. 
+. gen ln_price_food = ln(price_Food)
+{err}price_Food not found
+{txt}{search r(111), local:r(111);}
+
+end of do-file
+
+{search r(111), local:r(111);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD98513.000000"
+{txt}
+{com}. gen ln_npfood = ln_price_food - ln_price_transportation_old
+{err}ln_price_food not found
+{txt}{search r(111), local:r(111);}
+
+end of do-file
+
+{search r(111), local:r(111);}
+
+{com}. 
+. import excel "/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment 4b- Zamima Islam Sabaa/Deaton Dataset.xlsx", sheet("Deaton Dataset") firstrow
+{res}{text}(20 vars, 33,135 obs)
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD98513.000000"
+{txt}
+{com}. gen ln_price_food = ln(price_Food)
+{txt}
+{com}. gen ln_price_clothing_old = ln(price_Clothing)
+{txt}
+{com}. gen ln_price_transportation_old = ln(price_Transportation)
+{txt}
+{com}. gen ln_price_clothing_new = ln(new_price_Clothing)
+{txt}
+{com}. gen ln_price_trans_new = ln(new_price_Transport)
+{txt}
+{com}. 
+. 
+. destring expenditure_Clothing, replace force
+{txt}expenditure_Clothing: contains nonnumeric characters; {res}replaced {txt}as {res}long
+{txt}(20 missing values generated)
+{res}{txt}
+{com}. destring expenditure_Transportation, replace force
+{txt}expenditure_Transportation: contains nonnumeric characters; {res}replaced {txt}as {res}long
+{txt}(20 missing values generated)
+{res}{txt}
+{com}. destring expenditure_Food, replace force
+{txt}expenditure_Food: contains nonnumeric characters; {res}replaced {txt}as {res}long
+{txt}(20 missing values generated)
+{res}{txt}
+{com}. destring household_size, replace force
+{txt}household_size: contains nonnumeric characters; {res}replaced {txt}as {res}byte
+{txt}(20 missing values generated)
+{res}{txt}
+{com}. 
+. gen x = expenditure_Food+expenditure_Clothing+expenditure_Transportation
+{txt}(20 missing values generated)
+
+{com}. 
+. gen w_food = expenditure_Food/x
+{txt}(20 missing values generated)
+
+{com}. gen w_trasportation= expenditure_Transportation/x
+{txt}(20 missing values generated)
+
+{com}. gen w_Clothin= expenditure_Clothing/x
+{txt}(20 missing values generated)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD98513.000000"
+{txt}
+{com}. 
+. gen ln_npfood = ln_price_food - ln_price_transportation_old
+{txt}
+{com}. gen ln_npcloth = ln_price_clothing_old - ln_price_transportation_old
+{txt}
+{com}. gen ln_xbar = ln(x)- w_food*ln_npfood - w_Clothin*ln_npcloth - ln_price_transportation_old
+{txt}(43 missing values generated)
+
+{com}. 
+. constraint 1 [w_food]ln_npcloth=[w_Clothin]ln_npfood
+{txt}
+{com}. 
+. local eq1 "(w_food ln_npfood ln_npcloth ln_xbar household_size)"
+{txt}
+{com}. local eq2 "(w_Clothin ln_npfood ln_npcloth ln_xbar household_size)"
+{txt}
+{com}. 
+. sureg `eq1' `eq2'
+{res}
+{txt}Seemingly unrelated regression
+{hline 78}
+Equation             Obs   Params         RMSE  "R-squared"      chi2   P>chi2
+{hline 78}
+{res}w_food            33,092        4     .4815807      0.0784    2815.15   0.0000
+w_Clothin         33,092        4     .1820799      0.0047     155.08   0.0000
+{txt}{hline 78}
+
+{res}{txt}{hline 15}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 16}{c |} Coefficient{col 28}  Std. err.{col 40}      z{col 48}   P>|z|{col 56}     [95% con{col 69}f. interval]
+{hline 15}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}w_food         {txt}{c |}
+{space 5}ln_npfood {c |}{col 16}{res}{space 2} .1364927{col 28}{space 2} .0787065{col 39}{space 1}    1.73{col 48}{space 3}0.083{col 56}{space 4}-.0177691{col 69}{space 3} .2907545
+{txt}{space 4}ln_npcloth {c |}{col 16}{res}{space 2}-.0760973{col 28}{space 2} .0932745{col 39}{space 1}   -0.82{col 48}{space 3}0.415{col 56}{space 4} -.258912{col 69}{space 3} .1067175
+{txt}{space 7}ln_xbar {c |}{col 16}{res}{space 2}-.2065027{col 28}{space 2} .0040271{col 39}{space 1}  -51.28{col 48}{space 3}0.000{col 56}{space 4}-.2143957{col 69}{space 3}-.1986096
+{txt}household_size {c |}{col 16}{res}{space 2} .0375595{col 28}{space 2} .0024551{col 39}{space 1}   15.30{col 48}{space 3}0.000{col 56}{space 4} .0327476{col 69}{space 3} .0423713
+{txt}{space 9}_cons {c |}{col 16}{res}{space 2} 1.391323{col 28}{space 2} .0178982{col 39}{space 1}   77.74{col 48}{space 3}0.000{col 56}{space 4} 1.356243{col 69}{space 3} 1.426403
+{txt}{hline 15}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}w_Clothin      {txt}{c |}
+{space 5}ln_npfood {c |}{col 16}{res}{space 2}   .00099{col 28}{space 2}  .029758{col 39}{space 1}    0.03{col 48}{space 3}0.973{col 56}{space 4}-.0573346{col 69}{space 3} .0593145
+{txt}{space 4}ln_npcloth {c |}{col 16}{res}{space 2}-.0531283{col 28}{space 2}  .035266{col 39}{space 1}   -1.51{col 48}{space 3}0.132{col 56}{space 4}-.1222483{col 69}{space 3} .0159918
+{txt}{space 7}ln_xbar {c |}{col 16}{res}{space 2}-.0116663{col 28}{space 2} .0015226{col 39}{space 1}   -7.66{col 48}{space 3}0.000{col 56}{space 4}-.0146506{col 69}{space 3} -.008682
+{txt}household_size {c |}{col 16}{res}{space 2} .0111757{col 28}{space 2} .0009282{col 39}{space 1}   12.04{col 48}{space 3}0.000{col 56}{space 4} .0093564{col 69}{space 3}  .012995
+{txt}{space 9}_cons {c |}{col 16}{res}{space 2} .1701128{col 28}{space 2} .0067671{col 39}{space 1}   25.14{col 48}{space 3}0.000{col 56}{space 4} .1568496{col 69}{space 3} .1833761
+{txt}{hline 15}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD98513.000000"
+{txt}
+{com}. matrix B= e(b)
+{txt}
+{com}. matrix list B
+{res}
+{txt}B[1,10]
+          w_food:       w_food:       w_food:       w_food:       w_food:    w_Clothin:
+       ln_npfood    ln_npcloth       ln_xbar  household_~e         _cons     ln_npfood
+y1 {res}    .13649271    -.07609729    -.20650269      .0375595     1.3913229     .00098999
+
+{txt}       w_Clothin:    w_Clothin:    w_Clothin:    w_Clothin:
+      ln_npcloth       ln_xbar  household_~e         _cons
+y1 {res}   -.05312827    -.01166631     .01117568     .17011285
+{reset}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD98513.000000"
+{txt}
+{com}. 
+. gen ln_a_GST5 = (1.485878*ln_price_food +  0.1963076*ln_price_clothing_old + ln_price_transportation_old) + 0.5*(0.111983*ln_price_food*household_size + -0.0336429*ln_price_clothing_old*ln_price_clothing_old +2*-.0078275*ln_price_food*ln_price_clothing_old) + 1*(0.0453303*ln_price_food + 0.0132035*ln_price_clothing_old)
+{txt}(20 missing values generated)
+
+{com}. 
+. gen ln_a_GST10 = (1.485878*ln_price_food +  0.1963076*ln_price_clothing_new + ln_price_trans_new) + 0.5*(0.111983*household_size*ln_price_food + -0.0336429*ln_price_clothing_new*ln_price_clothing_new +2*-.0078275*ln_price_food*ln_price_clothing_new) + 1*(0.0453303*ln_price_food + 0.0132035*ln_price_clothing_new)
+{txt}(20 missing values generated)
+
+{com}. 
+. gen b_GST5 = exp(-0.2298432*ln_price_food + -0.017939*ln_price_clothing_old)
+{txt}
+{com}. gen b_GST10 = exp(-0.2298432*ln_price_food + -.2298432*ln_price_clothing_new)
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD98513.000000"
+{txt}
+{com}. gen Deaton_Cost_of_Living_Index = (((ln_a_GST10 - ln_a_GST5) + (10*(b_GST10 - b_GST5)))*-1)
+{txt}(20 missing values generated)
+
+{com}. 
+. log using "Assignment 4b: Demand Analysis",replace 
+{err}log file already open
+{txt}{search r(604), local:r(604);}
+
+end of do-file
+
+{search r(604), local:r(604);}
+
+{com}. exit, clear
