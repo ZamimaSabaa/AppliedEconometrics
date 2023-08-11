@@ -1,0 +1,984 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment - undirected /data/analysis /Untitled.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}10 Apr 2023, 22:06:21
+
+{com}. 
+. import delimited "/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment - undirected /data/Assignment_undirected_dta.csv"
+{res}{txt}(encoding automatically selected: UTF-8)
+{text}(29 vars, 2,470 obs)
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. ** Set working directory before doing things 
+. 
+. 
+. ** Dropping rows below necessary observations ** 
+. keep if _n<=1696
+{txt}(774 observations deleted)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *rename important variables
+. rename v22 total_students_94
+{res}{txt}
+{com}. rename totalstudentsallgradesexcludesae total_students_99
+{res}{txt}
+{com}. rename whitestudentspublicschool199495 white_students_94
+{res}{txt}
+{com}. rename whitestudentspublicschool199900 white_students_99
+{res}{txt}
+{com}. rename v26 total_teachers_94
+{res}{txt}
+{com}. rename fulltimeequivalentfteteacherspub total_teachers_99
+{res}{txt}
+{com}. rename schoolidncesassignedpublicschool school_id
+{res}{txt}
+{com}. rename countynumberpublicschool199900 county_1
+{res}{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Converting to numeric
+. destring white_students_99 white_students_94 total_students_99 total_students_94 total_teachers_99 total_teachers_94, replace force
+{txt}white_students_99: contains nonnumeric characters; {res}replaced {txt}as {res}int
+{txt}(112 missing values generated)
+{res}{txt}white_students_94: contains nonnumeric characters; {res}replaced {txt}as {res}int
+{txt}(437 missing values generated)
+{res}{txt}total_students_99: contains nonnumeric characters; {res}replaced {txt}as {res}int
+{txt}(43 missing values generated)
+{res}{txt}total_students_94: contains nonnumeric characters; {res}replaced {txt}as {res}int
+{txt}(437 missing values generated)
+{res}{txt}total_teachers_99: contains nonnumeric characters; {res}replaced {txt}as {res}double
+{txt}(293 missing values generated)
+{res}{txt}total_teachers_94: contains nonnumeric characters; {res}replaced {txt}as {res}double
+{txt}(448 missing values generated)
+{res}{txt}
+{com}. 
+. 
+. * However, countycodes and school_ids are still string values. Hence, we need to destring these
+. ssc install egenmore
+{txt}checking {hilite:egenmore} consistency and verifying not already installed...
+all files already exist and are up to date.
+
+{com}. ssc install ereplace
+{txt}checking {hilite:ereplace} consistency and verifying not already installed...
+all files already exist and are up to date.
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. ereplace county_1 = sieve(county_1), keep(numeric)
+{txt}(43 missing values generated)
+(43 real changes made)
+
+{com}. gen county = real(county_1)
+{txt}(43 missing values generated)
+
+{com}. destring school_id, force replace
+{txt}school_id already numeric; no {res}replace
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. ** Working with dependent variables
+. 
+. *Generating the dependent variable for Percentage White Non-Hispanic
+. gen per_white_99 = white_students_99/total_students_99
+{txt}(112 missing values generated)
+
+{com}. gen per_white_94 = white_students_94/total_students_94 
+{txt}(437 missing values generated)
+
+{com}. 
+. gen pupil_teacher_99= total_students_99/ total_teachers_99
+{txt}(304 missing values generated)
+
+{com}. gen pupil_teacher_94 = total_students_94/ total_teachers_94
+{txt}(455 missing values generated)
+
+{com}. 
+. * Some restrictions on observations based on percentile values given on paper
+. *Omitting  observations with pupil-teacher ratios greater than 150% of the 99th percentile value or less than 50% of the 1st percentile value 
+. egen percentile99_99 = pctile(pupil_teacher_99), p(99)
+{txt}
+{com}. egen percentile99_94 = pctile(pupil_teacher_94), p(99)
+{txt}
+{com}. 
+. egen percentile01_99 = pctile(pupil_teacher_99), p(1)
+{txt}
+{com}. egen percentile01_94 = pctile(pupil_teacher_94), p(1)
+{txt}
+{com}. 
+. drop if (pupil_teacher_99 > 1.5*percentile99_99 | pupil_teacher_94 > 1.5*percentile99_94)
+{txt}(481 observations deleted)
+
+{com}. drop if (pupil_teacher_99 < 0.5*percentile01_99 | pupil_teacher_94 < 0.5*percentile01_94)
+{txt}(4 observations deleted)
+
+{com}. drop percentile99_99 percentile99_94 percentile01_99 percentile01_94
+{txt}
+{com}. 
+. *Generating the locale-specific year fixed effects values:
+. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. ** Creating dummies for urbanicity
+. gen locale99 = .
+{txt}(1,211 missing values generated)
+
+{com}. replace locale99 = 1 if localepublicschool199900 == "1-Large city"| localepublicschool199900 == "2-Midsize city"
+{txt}(456 real changes made)
+
+{com}. replace locale99 = 2 if localepublicschool199900 == "3-Urban fringe of large city"| localepublicschool199900 == "4-Urban fringe of midsize city"| localepublicschool199900 == "5-Large town"| localepublicschool199900 == "6-Small town"
+{txt}(455 real changes made)
+
+{com}. replace locale99 = 3 if localepublicschool199900 == "7-Rural - outside CBSA/MSA"| localepublicschool199900 == "8-Rural - inside CBSA/MSA"
+{txt}(300 real changes made)
+
+{com}. 
+. gen locale94 = .
+{txt}(1,211 missing values generated)
+
+{com}. replace locale94 = 1 if localepublicschool199495 == "1-Large city"| localepublicschool199495 == "2-Midsize city"
+{txt}(498 real changes made)
+
+{com}. replace locale94 = 2 if localepublicschool199495 == "3-Urban fringe of large city"| localepublicschool199495 == "4-Urban fringe of midsize city"| localepublicschool199495 == "5-Large town"| localepublicschool199495 == "6-Small town"
+{txt}(464 real changes made)
+
+{com}. replace locale94 = 3 if localepublicschool199495 == "7-Rural - outside CBSA/MSA"| localepublicschool199495 == "8-Rural - inside CBSA/MSA"
+{txt}(249 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. 
+.  *Generating the level-specific year fixed effects values:
+.  
+. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. 
+.  *Generating the level-specific year fixed effects values:
+.  
+. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}.  
+.  ** Creating dummies for grade span and "elementary" level
+. gen lowgrade99 = .
+{txt}(1,211 missing values generated)
+
+{com}. replace lowgrade99 = 0 if  lowestgradeofferedpublicschool19 == "Kindergarten"| lowestgradeofferedpublicschool19 == "Prekindergarten"| lowestgradeofferedpublicschool19 == "Ungraded"
+{txt}(762 real changes made)
+
+{com}. replace lowgrade99 = 1 if  lowestgradeofferedpublicschool19 == "1st Grade"
+{txt}(15 real changes made)
+
+{com}. replace lowgrade99 = 2 if  lowestgradeofferedpublicschool19 == "2nd Grade"
+{txt}(7 real changes made)
+
+{com}. replace lowgrade99 = 3 if  lowestgradeofferedpublicschool19 == "3rd Grade"
+{txt}(20 real changes made)
+
+{com}. replace lowgrade99 = 4 if  lowestgradeofferedpublicschool19 == "4th Grade"
+{txt}(22 real changes made)
+
+{com}. replace lowgrade99 = 5 if  lowestgradeofferedpublicschool19 == "5th Grade"
+{txt}(18 real changes made)
+
+{com}. replace lowgrade99 = 6 if  lowestgradeofferedpublicschool19 == "6th Grade"
+{txt}(105 real changes made)
+
+{com}. replace lowgrade99 = 7 if  lowestgradeofferedpublicschool19 == "7th Grade"
+{txt}(95 real changes made)
+
+{com}. replace lowgrade99 = 8 if  lowestgradeofferedpublicschool19 == "8th Grade"
+{txt}(4 real changes made)
+
+{com}. replace lowgrade99 = 9 if  lowestgradeofferedpublicschool19 == "9th Grade"
+{txt}(152 real changes made)
+
+{com}. replace lowgrade99 = 10 if  lowestgradeofferedpublicschool19 == "10th Grade"
+{txt}(11 real changes made)
+
+{com}. replace lowgrade99 = 11 if  lowestgradeofferedpublicschool19 == "11th Grade"
+{txt}(0 real changes made)
+
+{com}. replace lowgrade99 = 12 if  lowestgradeofferedpublicschool19 == "12th Grade"
+{txt}(0 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. * Since the authors identified elementary schools as ungraded schools and those whose lowest grade was between pre-K and 6th grade, we create dummies for "elementary" level
+. gen elemlevel=0
+{txt}
+{com}. replace elemlevel = 1 if (lowgrade99 < 6)
+{txt}(844 real changes made)
+
+{com}. replace elemlevel = . if lowgrade99 == .
+{txt}(0 real changes made)
+
+{com}. 
+. ** Here I will find all the duplicates in the school_id variable and drop them then I need to reshape data in long format
+. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. ** Here I will find all the duplicates in the school_id variable and drop them then I need to reshape data in long format
+. duplicates drop, force
+{err}options not allowed
+{txt}{search r(101), local:r(101);}
+
+end of do-file
+
+{search r(101), local:r(101);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. duplicates drop, force
+{err}options not allowed
+{txt}{search r(101), local:r(101);}
+
+end of do-file
+
+{search r(101), local:r(101);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. duplicates drop, force
+{err}options not allowed
+{txt}{search r(101), local:r(101);}
+
+end of do-file
+
+{search r(101), local:r(101);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. reshape long per_white_ pupil_teacher_ locale total_students_ white_students_ total_teachers_, i(school_id) j(year)
+{txt}(j = 94 99)
+{err}variable {bf:id} does not uniquely identify the observations
+{p 4 4 2}
+Your data are currently wide. You
+are performing a {bf:reshape long}. You
+specified {bf:i(school_id)} and {bf:j(year)}. In
+the current wide form, variable {bf:school_id}
+should uniquely identify the observations. Remember
+this picture:
+
+{col 9} {it:long}                                {it:wide}
+{col 9}{c TLC}{hline 15}{c TRC}                   {c TLC}{hline 18}{c TRC}
+{col 9}{c |} {it:i   j}   a   b {c |}                   {c |} {it:i}   a1 a2  b1 b2 {c |}
+{col 9}{c |}{hline 15}{c |} <--- {bf:reshape} ---> {c |}{hline 18}{c |}
+{col 9}{c |} 1   1   1   2 {c |}                   {c |} 1   1   3   2  4 {c |}
+{col 9}{c |} 1   2   3   4 {c |}                   {c |} 2   5   7   6  8 {c |}
+{col 9}{c |} 2   1   5   6 {c |}                   {c BLC}{hline 18}{c BRC}
+{col 9}{c |} 2   2   7   8 {c |}
+{col 9}{c BLC}{hline 15}{c BRC}
+{p 4 4 2}
+Type {bf:reshape error} for a list of the
+problem observations.
+{p_end}
+{txt}{search r(9), local:r(9);}
+
+end of do-file
+
+{search r(9), local:r(9);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. gen elemlevel=0
+{err}variable {bf}elemlevel{sf} already defined
+{txt}{search r(110), local:r(110);}
+
+end of do-file
+
+{search r(110), local:r(110);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. duplicates drop, force
+{err}options not allowed
+{txt}{search r(101), local:r(101);}
+
+end of do-file
+
+{search r(101), local:r(101);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. reshape long per_white_ pupil_teacher_ locale total_students_ white_students_ total_teachers_, i(school_id) j(year)
+{txt}(j = 94 99)
+{err}variable {bf:id} does not uniquely identify the observations
+{p 4 4 2}
+Your data are currently wide. You
+are performing a {bf:reshape long}. You
+specified {bf:i(school_id)} and {bf:j(year)}. In
+the current wide form, variable {bf:school_id}
+should uniquely identify the observations. Remember
+this picture:
+
+{col 9} {it:long}                                {it:wide}
+{col 9}{c TLC}{hline 15}{c TRC}                   {c TLC}{hline 18}{c TRC}
+{col 9}{c |} {it:i   j}   a   b {c |}                   {c |} {it:i}   a1 a2  b1 b2 {c |}
+{col 9}{c |}{hline 15}{c |} <--- {bf:reshape} ---> {c |}{hline 18}{c |}
+{col 9}{c |} 1   1   1   2 {c |}                   {c |} 1   1   3   2  4 {c |}
+{col 9}{c |} 1   2   3   4 {c |}                   {c |} 2   5   7   6  8 {c |}
+{col 9}{c |} 2   1   5   6 {c |}                   {c BLC}{hline 18}{c BRC}
+{col 9}{c |} 2   2   7   8 {c |}
+{col 9}{c BLC}{hline 15}{c BRC}
+{p 4 4 2}
+Type {bf:reshape error} for a list of the
+problem observations.
+{p_end}
+{txt}{search r(9), local:r(9);}
+
+end of do-file
+
+{search r(9), local:r(9);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. duplicates report id
+{err}variable {bf}id{sf} not found
+{txt}{search r(111), local:r(111);}
+
+end of do-file
+
+{search r(111), local:r(111);}
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. duplicates report school_id
+
+{p 0 4}{txt}Duplicates in terms of {res} school_id{p_end}
+
+{txt}{hline 10}{c TT}{hline 27}
+   Copies {c |} Observations       Surplus
+{hline 10}{c +}{hline 27}
+        1 {c |}          {res}738             0
+        {txt}2 {c |}           {res}30            15
+        {txt}3 {c |}           {res}66            44
+        {txt}4 {c |}           {res}24            18
+        {txt}5 {c |}           {res}25            20
+        {txt}6 {c |}           {res}42            35
+        {txt}7 {c |}           {res}14            12
+        {txt}8 {c |}            {res}8             7
+        {txt}9 {c |}            {res}9             8
+       {txt}10 {c |}           {res}20            18
+       {txt}11 {c |}           {res}22            20
+       {txt}12 {c |}           {res}24            22
+       {txt}13 {c |}           {res}13            12
+       {txt}14 {c |}           {res}14            13
+       {txt}15 {c |}           {res}15            14
+       {txt}16 {c |}           {res}16            15
+       {txt}19 {c |}           {res}19            18
+       {txt}21 {c |}           {res}21            20
+       {txt}91 {c |}           {res}91            90
+{txt}{hline 10}{c BT}{hline 27}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. duplicates drop school_id, force
+
+{p 0 4}{txt}Duplicates in terms of {res} school_id{p_end}
+
+{txt}(401 observations deleted)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. reshape long per_white_ pupil_teacher_ locale total_students_ white_students_ total_teachers_, i(school_id) j(year)
+{txt}(j = 94 99)
+
+Data{col 36}Wide{col 43}->{col 48}Long
+{hline 77}
+Number of observations     {res}         810   {txt}->   {res}1,620       
+{txt}Number of variables        {res}          38   {txt}->   {res}33          
+{txt}j variable (2 values)                     ->   {res}year
+{txt}xij variables:
+              {res}per_white_94 per_white_99   {txt}->   {res}per_white_
+      pupil_teacher_94 pupil_teacher_99   {txt}->   {res}pupil_teacher_
+                      locale94 locale99   {txt}->   {res}locale
+    total_students_94 total_students_99   {txt}->   {res}total_students_
+    white_students_94 white_students_99   {txt}->   {res}white_students_
+    total_teachers_94 total_teachers_99   {txt}->   {res}total_teachers_
+{txt}{hline 77}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Generating the controls:
+. ** Creating state fixed effect
+. gen str12 school_state = subinstr(stateabbrpublicschoollatestavail," ","",.) //removing blank spaces from "stateabbrpublicschoollatestavail"// 
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. gen arizona = 0
+{txt}
+{com}. replace arizona = 1 if school_state == "AZ" 
+{txt}(1,460 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. **for the diff in diff interaction variable
+. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. gen year99 = 0
+{txt}
+{com}. replace year99 = 1 if year == 99
+{txt}(810 real changes made)
+
+{com}. gen arizona_1999 = arizona*year99
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. ** I save the data file as "data_new.dta"
+. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. save "data_new.dta"
+{txt}{p 0 4 2}
+file {bf}
+data_new.dta{rm}
+saved
+{p_end}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. ***Importing text files, combining them and save them to data file
+. clear all
+{res}{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. infile year county age race ethnic population using "stch-icen1994.txt"
+{err}{p 0 4 2}
+file {bf:{err}stch-icen1994.txt}
+not found
+{p_end}
+{txt}{search r(601), local:r(601);}
+
+end of do-file
+
+{search r(601), local:r(601);}
+
+{com}. cd "/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment - undirected /data"
+{res}/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment - undirected /data
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. infile year county age race ethnic population using "stch-icen1994.txt"
+{txt}(954,864 observations read)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. save "stch-icen1994.dta", replace 
+{txt}{p 0 4 2}
+file {bf}
+stch-icen1994.dta{rm}
+saved
+{p_end}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. clear all
+{res}{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. infile year county age race ethnic population using "stch-icen1999.txt"
+{txt}(954,864 observations read)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. append using "stch-icen1994.dta"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. append using "stch-icen1994.dta"
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Keeping only Arizona and New Mexico from the counties:
+. keep if (county>=4000 & county <5000) | (county >=35000 & county <36000)
+{txt}(2,820,816 observations deleted)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *keeping age group 5 to 19merge 1:m county year using "C:\Users\jeena\Downloads\Assignment_4b_jeenat\new_data.dta"
+. keep if age == 2 | age == 3 | age == 4
+{txt}(36,864 observations deleted)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *calculating white nonhispanic male and female percentage
+. egen white_nonhispanic = sum(pop) if ((race== 1 | race== 2) & ethnic == 1), by (county)
+{txt}(6,048 missing values generated)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. egen total_pop = sum(population), by (year county)
+{txt}
+{com}. gen county_percent_white = white_nonhispanic/total_pop
+{txt}(6,048 missing values generated)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. * Droping duplicate observations before merging
+. drop if county_percent_white== .
+{txt}(6,048 observations deleted)
+
+{com}. duplicates drop county_percent_white, force
+
+{p 0 4}{txt}Duplicates in terms of {res} county_percent_white{p_end}
+
+{txt}(768 observations deleted)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. save "appended_94_data99.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+appended_94_data99.dta{rm}
+saved
+{p_end}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. merge 1:m county year using "data_new.dta"
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}           1,620{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. save "data_analysis.dta", replace 
+{txt}{p 0 4 2}
+(file {bf}
+data_analysis.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+data_analysis.dta{rm}
+saved
+{p_end}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. gen med_income="52601" if year==94 & school_state=="AZ"
+{txt}(890 missing values generated)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. replace med_income="45225" if year==94 & school_state=="NM" 
+{txt}(80 real changes made)
+
+{com}. replace med_income="55931" if year==99 & school_state=="AZ"
+{txt}(730 real changes made)
+
+{com}. replace med_income="52601" if year==99 & school_state=="NM"
+{txt}(80 real changes made)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. destring med_income, force replace
+{txt}med_income: all characters numeric; {res}replaced {txt}as {res}long
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. 
+. * Inserting percent of 5-17 year olds in poverty in 1994 and 1999 extracted from US Fred Economic Data https://fred.stlouisfed.org/tags/series?t=poverty%3Bstate&ob=pv&od=desc 
+. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. gen child_poverty="0.221" if year==94 & school_state=="AZ"
+{txt}(890 missing values generated)
+
+{com}. replace child_poverty="0.292" if year==94 & school_state=="NM"
+{txt}(80 real changes made)
+
+{com}. replace child_poverty="0.183" if year==99 & school_state=="AZ"
+{txt}(730 real changes made)
+
+{com}. replace child_poverty="0.244" if year==99 & school_state=="NM"
+{txt}(80 real changes made)
+
+{com}. destring child_poverty, force replace 
+{txt}child_poverty: all characters numeric; {res}replaced {txt}as {res}double
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Table 3, Column 1
+. areg per_white_ year99 arizona_1999, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,613}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:2}, {res:801})}{col 70} = {res}{ralign 6:205.73}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.9827}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.9653}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0561}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}  per_white_{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}year99 {c |}{col 14}{res}{space 2}-.0156037{col 26}{space 2} .0091949{col 37}{space 1}   -1.70{col 46}{space 3}0.090{col 54}{space 4}-.0336527{col 67}{space 3} .0024453
+{txt}arizona_1999 {c |}{col 14}{res}{space 2}-.0439394{col 26}{space 2} .0096553{col 37}{space 1}   -4.55{col 46}{space 3}0.000{col 54}{space 4}-.0628921{col 67}{space 3}-.0249868
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .5588342{col 26}{space 2} .0019755{col 37}{space 1}  282.88{col 46}{space 3}0.000{col 54}{space 4} .5549563{col 67}{space 3}  .562712
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Table 3, Column 2
+. areg per_white_ year99 arizona_1999 county_percent_white, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,613}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:3}, {res:800})}{col 70} = {res}{ralign 6:140.77}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.9828}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.9653}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0561}
+
+{txt}{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}     per_white_{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 9}year99 {c |}{col 17}{res}{space 2}-.0040052{col 29}{space 2} .0158192{col 40}{space 1}   -0.25{col 49}{space 3}0.800{col 57}{space 4}-.0350573{col 70}{space 3} .0270468
+{txt}{space 3}arizona_1999 {c |}{col 17}{res}{space 2}-.0442603{col 29}{space 2} .0097094{col 40}{space 1}   -4.56{col 49}{space 3}0.000{col 57}{space 4}-.0633191{col 70}{space 3}-.0252015
+{txt}county_percen~e {c |}{col 17}{res}{space 2}-.0199286{col 29}{space 2} .0222554{col 40}{space 1}   -0.90{col 49}{space 3}0.371{col 57}{space 4}-.0636145{col 70}{space 3} .0237572
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .5761935{col 29}{space 2} .0197528{col 40}{space 1}   29.17{col 49}{space 3}0.000{col 57}{space 4}   .53742{col 70}{space 3} .6149671
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Table 3, Column 3: locale-specific:
+. areg per_white_ year99 arizona_1999 c.year99#c.locale, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,613}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:3}, {res:800})}{col 70} = {res}{ralign 6:177.15}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.9838}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.9673}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0544}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}  per_white_{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}year99 {c |}{col 14}{res}{space 2}-.0841498{col 26}{space 2} .0137334{col 37}{space 1}   -6.13{col 46}{space 3}0.000{col 54}{space 4}-.1111075{col 67}{space 3} -.057192
+{txt}arizona_1999 {c |}{col 14}{res}{space 2}-.0208645{col 26}{space 2} .0104266{col 37}{space 1}   -2.00{col 46}{space 3}0.046{col 54}{space 4}-.0413311{col 67}{space 3}-.0003978
+{txt}{space 12} {c |}
+{space 4}c.year99#{c |}
+{space 4}c.locale {c |}{col 14}{res}{space 2} .0264912{col 26}{space 2} .0039325{col 37}{space 1}    6.74{col 46}{space 3}0.000{col 54}{space 4} .0187719{col 67}{space 3} .0342106
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .5588342{col 26}{space 2} .0019158{col 37}{space 1}  291.69{col 46}{space 3}0.000{col 54}{space 4} .5550735{col 67}{space 3} .5625948
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Table 3, Column 4: level-specific:
+. areg per_white_ year99 arizona_1999 c.year99#c.elemlevel, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,613}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:3}, {res:800})}{col 70} = {res}{ralign 6:140.19}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.9830}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.9658}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0557}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}  per_white_{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}year99 {c |}{col 14}{res}{space 2} .0045924{col 26}{space 2}   .01034{col 37}{space 1}    0.44{col 46}{space 3}0.657{col 54}{space 4}-.0157043{col 67}{space 3}  .024889
+{txt}arizona_1999 {c |}{col 14}{res}{space 2}-.0468166{col 26}{space 2} .0097801{col 37}{space 1}   -4.79{col 46}{space 3}0.000{col 54}{space 4}-.0660142{col 67}{space 3} -.027619
+{txt}{space 12} {c |}
+{space 4}c.year99#{c |}
+{space 1}c.elemlevel {c |}{col 14}{res}{space 2}-.0237601{col 26}{space 2} .0055908{col 37}{space 1}   -4.25{col 46}{space 3}0.000{col 54}{space 4}-.0347344{col 67}{space 3}-.0127857
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .5588342{col 26}{space 2} .0019598{col 37}{space 1}  285.15{col 46}{space 3}0.000{col 54}{space 4} .5549873{col 67}{space 3}  .562681
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Table 3, Column 5: both locale-specific and level-specific:
+. areg per_white_  year99 arizona_1999 c.year99#c.elemlevel c.year99#c.locale, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,613}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:4}, {res:799})}{col 70} = {res}{ralign 6:134.91}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.9840}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.9678}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0540}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}  per_white_{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}year99 {c |}{col 14}{res}{space 2}-.0640785{col 26}{space 2}  .014912{col 37}{space 1}   -4.30{col 46}{space 3}0.000{col 54}{space 4}-.0933498{col 67}{space 3}-.0348071
+{txt}arizona_1999 {c |}{col 14}{res}{space 2}-.0239667{col 26}{space 2} .0105408{col 37}{space 1}   -2.27{col 46}{space 3}0.023{col 54}{space 4}-.0446576{col 67}{space 3}-.0032759
+{txt}{space 12} {c |}
+{space 4}c.year99#{c |}
+{space 1}c.elemlevel {c |}{col 14}{res}{space 2}-.0221418{col 26}{space 2}  .005336{col 37}{space 1}   -4.15{col 46}{space 3}0.000{col 54}{space 4} -.032616{col 67}{space 3}-.0116676
+{txt}{space 12} {c |}
+{space 4}c.year99#{c |}
+{space 4}c.locale {c |}{col 14}{res}{space 2} .0260079{col 26}{space 2} .0039132{col 37}{space 1}    6.65{col 46}{space 3}0.000{col 54}{space 4} .0183265{col 67}{space 3} .0336892
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .5588342{col 26}{space 2} .0019018{col 37}{space 1}  293.85{col 46}{space 3}0.000{col 54}{space 4} .5551011{col 67}{space 3} .5625673
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Table 4, Column 1
+. areg pupil_teacher_ year99 arizona_1999, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,620}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:2}, {res:808})}{col 70} = {res}{ralign 6:46.97}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.7793}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.5578}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:2.8678}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}pupil_teac~_{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}year99 {c |}{col 14}{res}{space 2}-2.906829{col 26}{space 2} .4651035{col 37}{space 1}   -6.25{col 46}{space 3}0.000{col 54}{space 4}-3.819783{col 67}{space 3}-1.993875
+{txt}arizona_1999 {c |}{col 14}{res}{space 2} 1.798039{col 26}{space 2} .4885953{col 37}{space 1}    3.68{col 46}{space 3}0.000{col 54}{space 4} .8389734{col 67}{space 3} 2.757105
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} 18.88011{col 26}{space 2} .1007652{col 37}{space 1}  187.37{col 46}{space 3}0.000{col 54}{space 4} 18.68232{col 67}{space 3}  19.0779
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Table 4, Column 2: locale-specific:
+. areg pupil_teacher_  year99 arizona_1999 c.year99#c.locale, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,620}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:3}, {res:807})}{col 70} = {res}{ralign 6:33.70}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.7822}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.5631}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:2.8507}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}pupil_teac~_{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}year99 {c |}{col 14}{res}{space 2}-4.541925{col 26}{space 2} .7106831{col 37}{space 1}   -6.39{col 46}{space 3}0.000{col 54}{space 4} -5.93693{col 67}{space 3}-3.146919
+{txt}arizona_1999 {c |}{col 14}{res}{space 2} 2.349347{col 26}{space 2} .5258619{col 37}{space 1}    4.47{col 46}{space 3}0.000{col 54}{space 4} 1.317129{col 67}{space 3} 3.381566
+{txt}{space 12} {c |}
+{space 4}c.year99#{c |}
+{space 4}c.locale {c |}{col 14}{res}{space 2} .6319211{col 26}{space 2} .1969338{col 37}{space 1}    3.21{col 46}{space 3}0.001{col 54}{space 4} .2453582{col 67}{space 3} 1.018484
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} 18.88011{col 26}{space 2} .1001618{col 37}{space 1}  188.50{col 46}{space 3}0.000{col 54}{space 4}  18.6835{col 67}{space 3} 19.07672
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}.  *Table 4, Column 3: level-specific:
+. areg pupil_teacher_  year99 arizona_1999 c.year99#c.elemlevel, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,620}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:3}, {res:807})}{col 70} = {res}{ralign 6:35.05}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.7797}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.5580}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:2.8671}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}pupil_teac~_{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}year99 {c |}{col 14}{res}{space 2}-2.578582{col 26}{space 2} .6040223{col 37}{space 1}   -4.27{col 46}{space 3}0.000{col 54}{space 4}-3.764222{col 67}{space 3}-1.392941
+{txt}arizona_1999 {c |}{col 14}{res}{space 2} 1.750693{col 26}{space 2} .4973702{col 37}{space 1}    3.52{col 46}{space 3}0.000{col 54}{space 4} .7744013{col 67}{space 3} 2.726985
+{txt}{space 12} {c |}
+{space 4}c.year99#{c |}
+{space 1}c.elemlevel {c |}{col 14}{res}{space 2}-.3861731{col 26}{space 2} .3678338{col 37}{space 1}   -1.05{col 46}{space 3}0.294{col 54}{space 4}-1.108197{col 67}{space 3} .3358507
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} 18.88011{col 26}{space 2} .1007399{col 37}{space 1}  187.41{col 46}{space 3}0.000{col 54}{space 4} 18.68237{col 67}{space 3} 19.07785
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. *Table 4, Column 4: both locale-specific and level-specific:
+. areg pupil_teacher_  year99 arizona_1999 c.year99#c.elemlevel c.year99#c.locale, absorb(school_id) vce(robust)
+{res}
+{txt}{col 1}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,620}
+{txt}{col 1}Absorbed variable: {res:school_id}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:810}
+{txt}{col 53}{lalign 17:F({res:4}, {res:806})}{col 70} = {res}{ralign 6:29.56}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.7825}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.5632}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:2.8503}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}pupil_teac~_{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}year99 {c |}{col 14}{res}{space 2} -4.22539{col 26}{space 2} .8757232{col 37}{space 1}   -4.83{col 46}{space 3}0.000{col 54}{space 4}-5.944357{col 67}{space 3}-2.506423
+{txt}arizona_1999 {c |}{col 14}{res}{space 2} 2.300228{col 26}{space 2} .5398856{col 37}{space 1}    4.26{col 46}{space 3}0.000{col 54}{space 4}  1.24048{col 67}{space 3} 3.359975
+{txt}{space 12} {c |}
+{space 4}c.year99#{c |}
+{space 1}c.elemlevel {c |}{col 14}{res}{space 2}-.3512786{col 26}{space 2} .3691804{col 37}{space 1}   -0.95{col 46}{space 3}0.342{col 54}{space 4}-1.075947{col 67}{space 3} .3733898
+{txt}{space 12} {c |}
+{space 4}c.year99#{c |}
+{space 4}c.locale {c |}{col 14}{res}{space 2} .6249846{col 26}{space 2} .1989648{col 37}{space 1}    3.14{col 46}{space 3}0.002{col 54}{space 4} .2344343{col 67}{space 3} 1.015535
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} 18.88011{col 26}{space 2} .1001509{col 37}{space 1}  188.52{col 46}{space 3}0.000{col 54}{space 4} 18.68352{col 67}{space 3}  19.0767
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/var/folders/jy/c89qg0jn4sv3s107f7kjl85c0000gn/T//SD67875.000000"
+{txt}
+{com}. log close 
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/Users/zamimaislam/Documents/SFU courses/Spring 2022/Econ836 - A. Econometrics/Assignm/Assignment - undirected /data/analysis /Untitled.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}10 Apr 2023, 22:18:38
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
